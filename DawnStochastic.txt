@@ -1,0 +1,53 @@
+//@version=4
+//**********************************************\\
+
+// MADE by Dawn
+// THIS is just a regular stochastic, but the Tops and Lows of the calculation getting
+// fast ema smoothed
+// Also looking better than ordinary Stochastic + an extra signal line and an RSI
+
+//**********************************************\\
+
+
+study("Stochastic smoothed top, lows", shorttitle="SsTL", overlay=false)
+length = input(14, minval=1, title="%K")
+fastD = input(6, minval=1, title="%D")
+slowD = input(5, minval=1, title="Slow%D")
+hlSmooth = input(title="High-Low smooth length", defval=3)
+nn = input(title="Zero Lag EMA of Slow Stochastic", defval=22)
+highS1 = ema(high, hlSmooth)
+lowS1 = ema(low, hlSmooth)
+highS = highS1 * 2 - ema(highS1, hlSmooth)
+lowS = lowS1 * 2 - ema(lowS1, hlSmooth)
+percentK = stoch(close, highS, lowS, length)
+percentD = sma(percentK, fastD)
+slow_percentD = sma(percentD, slowD)
+
+
+//Signal Line
+
+showSignal = input(title="Show Signal Line", defval = true)
+nnn = ema(slow_percentD, nn)
+nnn2 = ema(nnn, nn)
+r = 2 * nnn - nnn2
+plot(showSignal ? r : na, color=color.purple, linewidth=2)
+
+
+dum = percentD - slow_percentD
+duml = plot(dum > 0 ? percentD : slow_percentD, color=color.black, linewidth=0, title="dumm line")
+
+a = plot(percentD, color=dum > 0 ? color.green : color.red, title="%D", transp=20)
+b = plot(slow_percentD, color=color.gray, title="Slow%D", transp=20)
+
+fill(duml, b, color.green, transp=70, title="PosFill")
+fill(duml, a, color.red, transp=70, title="NegFill")
+
+showRSI = input(title="Show RSI", defval=false)
+rsiLL = input(title="RSI Length", defval=14)
+rsi_1 = rsi(close, rsiLL)
+plot(showRSI ? rsi_1 : 0, color=color.white)
+
+hline(40, color=color.white, linewidth=1)
+hline(80, color=color.green, linestyle=hline.style_solid, linewidth=1)
+hline(20, color=color.red, linestyle=hline.style_solid, linewidth=1)
+hline(60, color=color.white)
