@@ -1,2 +1,2 @@
 # learning
-Some stuff for others to learn
+Some stuff for others to learn and use
