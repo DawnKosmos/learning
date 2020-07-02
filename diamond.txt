@@ -1,0 +1,56 @@
+//@version=4
+study("The Diamond", shorttitle="The D", overlay=false)
+
+//**********************************************\\
+
+// MADE by Dawn
+// Use it on the 6h only and only on Cryptousd pairs
+// Green Buy signals, Red Sell signals. Blue signals usually can be ignored, also can be used to close a position
+
+//**********************************************\\
+
+long(len) =>
+    (close - lowest(len)) / lowest(len)
+
+short(len) =>
+    abs((close - highest(len)) / highest(len))
+
+
+//SMI 1
+prozent = input(title="minimum moved Long", defval=1, minval=0, step=0.2)
+prozents = input(title="minimum moved Short", defval=1, minval=0, step=0.2)
+len = input(title="bars look back for the minimum move", defval=4, minval=1)
+useVol = input(title="Use Volume", defval=true)
+//SMI 2
+
+rsiL2 = input(title="BtD Lenght", defval=10, minval=3)
+rsiSmoothL2 = input(title="Smooth BtD", defval=4, minval=2)
+
+btdRSI = sma(rsi(open + close, rsiL2), 2)
+btdB1 = sma(btdRSI, rsiSmoothL2)
+btdB2 = sma(btdB1, rsiSmoothL2)
+btdB = 2 * btdB1 - btdB2
+
+diffBtd = btdRSI - btdB
+vwma_2 = vwma(diffBtd, 2)
+sma_2 = sma(diffBtd, 2)
+diffBtdS = useVol ? vwma_2 : sma_2
+buyCon2 = diffBtdS > diffBtdS[1] and diffBtdS[1] < diffBtdS[2]
+sellCon2 = diffBtdS < diffBtdS[1] and diffBtdS[1] > diffBtdS[2]
+
+
+//Plot
+
+hline(0, color=color.white)
+
+plot(diffBtdS, color=color.purple, linewidth=3)
+
+asd = prozent / 100
+asds = prozents / 100
+
+
+plot(buyCon2 and long(len) > asd ? diffBtdS - 2 : na, color=color.green, style=plot.style_cross, linewidth=4)
+plot(sellCon2 and short(len) > asds ? diffBtdS +2 : na, color=color.red, style=plot.style_cross, linewidth=4)
+plot(buyCon2 and not(long(len) > asd) ? diffBtdS - 2 : na, color=color.aqua, style=plot.style_cross, linewidth=4, transp=50)
+plot(sellCon2 and not(short(len) > asds) ? diffBtdS + 2 : na, color=color.aqua, style=plot.style_cross, linewidth=4, transp=50)
+
